@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-//import 'package:mobilesoftware/screens/add_user_screen.dart';
+import 'package:mobilesoftware/screens/add_user_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/error_screen.dart';
 import 'helpers/database_helper.dart';
-import 'package:mobilesoftware/screens/users_screen.dart';
+//import 'package:mobilesoftware/screens/users_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobilesoftware/core/providers/auth_provider.dart';
 
@@ -18,7 +18,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -79,9 +79,9 @@ class MyApp extends StatelessWidget {
                 color: Colors.white,
               ),
             ).copyWith(
-              backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                    (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.disabled)) {
+              backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                    (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.disabled)) {
                     return const Color(0xFFBDBDBD);
                   }
                   return const Color(0xFF0066CC);
@@ -104,7 +104,7 @@ class MyApp extends StatelessWidget {
           }
           return MaterialPageRoute(builder: (context) => ErrorScreen());
         },
-        home: const UsersScreen(),
+        home: const AddUserScreen(),
       ),
     );
   }

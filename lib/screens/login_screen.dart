@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobilesoftware/screens/home_screen.dart'; // Keep for now, navigation will be handled differently later
 import 'package:provider/provider.dart'; // Import Provider
 import 'package:mobilesoftware/core/providers/auth_provider.dart'; // Import AuthProvider
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -66,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ElevatedButton(
                             style: Theme.of(context).elevatedButtonTheme.style?.copyWith( // Use button theme
-                              padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 90, vertical: 10)),
+                              padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 90, vertical: 10)),
                             ),
                             onPressed: authProvider.isLoading
                                 ? null
