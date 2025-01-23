@@ -20,6 +20,8 @@ class Assets {
   static const String servicesAuthService = 'lib/services/auth_service.dart';
   static const String stylesStyles = 'lib/styles/styles.dart';
   static const String utilsConstants = 'lib/core/utils/constants.dart';
+  static const String widgetsCustomElevatedButton = 'lib/widgets/custom_elevated_button.dart';
+  static const String widgetsCustomTextFormField = 'lib/widgets/custom_text_form_field.dart';
   static const String widgetsDashboard = 'lib/widgets/dashboard.dart';
   static const String widgetsRecentActivity = 'lib/widgets/recent_activity.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import Provider
-import 'package:mobilesoftware/core/providers/auth_provider.dart'; // Import AuthProvider
+import 'package:provider/provider.dart';
+import 'package:mobilesoftware/core/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,12 +41,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   Text(
                     'Login Name',
-                    style: Theme.of(context).textTheme.titleLarge, // Use theme's titleLarge
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 20),
-                  _buildTextField(labelText: 'User Name', obscureText: false, context: context), // Pass context
+                  _buildTextField( // **Username field**
+                    labelText: 'User Name',
+                    obscureText: false,
+                    context: context,
+                    controller: _usernameController, // **Username controller pass karen**
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(labelText: 'Password', obscureText: true, context: context), // Pass context
+                  _buildTextField( // **Password field**
+                    labelText: 'Password',
+                    obscureText: true,
+                    context: context,
+                    controller: _passwordController, // **Password controller pass karen**
+                  ),
                   const SizedBox(height: 10),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, child) {
@@ -57,14 +67,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
                                 authProvider.errorMessage!,
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith( // Use headline6 from theme for error
-                                  color: Theme.of(context).colorScheme.error, // Ensure error color from theme
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
                           ElevatedButton(
-                            style: Theme.of(context).elevatedButtonTheme.style?.copyWith( // Use button theme
+                            style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
                               padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 90, vertical: 10)),
                             ),
                             onPressed: authProvider.isLoading
@@ -89,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             )
                                 : Text(
                               'Login',
-                              style: Theme.of(context).textTheme.labelSmall, // Use button text style from theme
+                              style: Theme.of(context).textTheme.labelSmall,
                             ),
                           ),
                         ],
@@ -116,16 +126,17 @@ class _LoginScreenState extends State<LoginScreen> {
     required String labelText,
     required bool obscureText,
     required BuildContext context,
+    required TextEditingController controller, // **Controller parameter added here**
   }) {
     return TextFormField(
-      controller: _usernameController, // Note: Still using _usernameController (should be based on labelText or more generic if reused)
-      style: Theme.of(context).textTheme.bodyMedium, // Use theme's bodyText1
+      controller: controller, // **Now using the dynamic controller**
+      style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: Theme.of(context).textTheme.labelMedium, // Use theme's caption
+        labelStyle: Theme.of(context).textTheme.labelMedium,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0)),
         filled: true,
-        fillColor: Theme.of(context).colorScheme.secondary, // Use theme's secondary color
+        fillColor: Theme.of(context).colorScheme.secondary,
       ),
       obscureText: obscureText,
     );

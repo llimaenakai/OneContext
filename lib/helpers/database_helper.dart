@@ -240,11 +240,10 @@ class DatabaseHelper {
             CREATE TABLE audit_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
-                action_type TEXT NOT NULL,
-                table_name TEXT NOT NULL,
-                record_id INTEGER NOT NULL,
-                action_details TEXT,
-                action_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                event_type TEXT NOT NULL, -- 'login' or 'logout'
+                event_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                logout_reason TEXT,       -- Reason for logout (optional)
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''';
       case 'users':
@@ -273,7 +272,7 @@ class DatabaseHelper {
   Future<void> _onDowngrade(Database db, int oldVersion, int newVersion) async {
     throw DatabaseException('Database downgrade is not supported.');
   }
-// new implemention added
+
   Future<void> initializeDatabase() async {
     try {
       final db = await database;
@@ -289,13 +288,13 @@ class DatabaseHelper {
     } catch(e){
       throw  DatabaseException("Failed To add Admin User or check User Database");
     }
-  }// **Made Public - Removed Underscore `_`**
+  }
 
   Future<String> hashPassword(String password) async {
     final salt = BCrypt.gensalt();
     return BCrypt.hashpw(password,salt);
   }
-  Future<User?> getUserByName(String username) async { // **1. Changed return type to User?**
+  Future<User?> getUserByName(String username) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'users',
@@ -304,10 +303,10 @@ class DatabaseHelper {
     );
 
     if (maps.isEmpty) {
-      return null; // **2a. Return null if no user found**
+      return null;
     }
 
-    return User.fromMap(maps.first); // **2b. Return the first user as User object**
+    return User.fromMap(maps.first);
   }
   Future<int> insertRecord(String tableName, Map<String, dynamic> values) async {
     final db = await database;
@@ -367,4 +366,15 @@ class DatabaseHelper {
     }
 
   }
+  Future<List<String>> getDistinctUserRoles() async {
+    final db = await database;
+    try {
+      final List<Map<String, dynamic>> roleMaps = await db.rawQuery(
+          'SELECT DISTINCT role FROM users'); // SQL to get distinct roles
+      return roleMaps.map((map) => map['role'] as String).toList(); // Convert maps to list of strings
+    } catch (e) {
+      throw DatabaseException('Failed to fetch distinct user roles: $e');
+    }
+  }
+
 }

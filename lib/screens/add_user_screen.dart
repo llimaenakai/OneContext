@@ -2,123 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobilesoftware/core/utils/constants.dart';
 import 'package:mobilesoftware/helpers/database_helper.dart';
-//import 'package:mobilesoftware/styles/styles.dart'; // Ensure this import is still here
+import 'package:mobilesoftware/widgets/custom_text_form_field.dart';
+import 'package:mobilesoftware/widgets/custom_elevated_button.dart';
 
 class AddUserScreen extends StatefulWidget {
-  const AddUserScreen({super.key});
+  const AddUserScreen({Key? key}) : super(key: key);
 
   @override
-  State<AddUserScreen> createState() => _AddUserScreenState();
+  _AddUserScreenState createState() => _AddUserScreenState();
 }
 
 class _AddUserScreenState extends State<AddUserScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _formData = <String, dynamic>{};
+  final Map<String, dynamic> _formData = <String, dynamic>{};
   String _message = '';
   bool _isLoading = false;
   bool _obscureText = true;
+  String? _selectedRole;
+  List<String>? _roles;
+  String _errorMessage = '';
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Add new user',
-          style: TextStyle(color: Colors.black),
-        ),
-        leading: IconButton(
-          onPressed: () {
-            context.pop();
-          },
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(constraints.maxWidth * 0.1),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Please add user to database',
-                      style: TextStyle(color: Colors.black, fontSize: 18),
-                    ),
-                    SizedBox(height: constraints.maxHeight * 0.03),
-                    _CustomTextFormField(
-                      labelText: 'User Name',
-                      inputType: LoginInputType.email,
-                      onSaved: (value) {
-                        _formData[LoginFormKeys.email.key] = value;
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please add user name";
-                        }
-                        if (!RegExp(
-                            r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$")
-                            .hasMatch(value)) {
-                          return "Invalid Username format please use a valid email instead";
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    _CustomTextFormField(
-                      labelText: 'Password',
-                      inputType: LoginInputType.password,
-                      obscureText: _obscureText,
-                      onSaved: (value) {
-                        _formData[LoginFormKeys.password.key] = value;
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please provide password for user';
-                        }
-                        if (value.length < 6) {
-                          return 'Minimum 6 char password required';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: constraints.maxHeight * 0.03),
-                    _ElevatedButton(
-                      onPressed: _isLoading ? null : _addUser,
-                      text: 'Add User',
-                      loading: _isLoading,
-                    ),
-                    SizedBox(height: constraints.maxHeight * 0.02),
-                    Text(
-                      _message,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  void initState() {
+    super.initState();
+    _loadUserRoles();
+  }
+
+  Future<void> _loadUserRoles() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    try {
+      final dbHelper = DatabaseHelper();
+      _roles = await dbHelper.getDistinctUserRoles();
+      if (_roles == null || _roles!.isEmpty) {
+        _errorMessage = "No user roles found in database.";
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load user roles: $e';
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _addUser() async {
@@ -131,110 +58,185 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
       try {
         final dbHelper = DatabaseHelper();
-        // **Security Improvement: Hash the password before inserting**
         final hashedPassword = await dbHelper.hashPassword(_formData[LoginFormKeys.password.key]);
 
         final userId = await dbHelper.insertRecord('users', {
           'username': _formData[LoginFormKeys.email.key],
-          'password_hash': hashedPassword, // Use the hashed password
-          'role': 'administrator',
+          'password_hash': hashedPassword,
+          'role': _selectedRole,
         });
-        if (userId > 0) {
-          setState(() {
-            _message = 'User added correctly!';
-          });
 
+        if (userId > 0) {
+          _showSuccessMessage('User added successfully!');
           await Future.delayed(const Duration(seconds: 2));
           if (mounted) {
-            context.pop();
+            context.goNamed('users'); // Using goNamed for navigation
           }
-          return;
         } else {
-          setState(() {
-            _message = 'User was not added to database';
-          });
+          _showErrorMessage('Failed to add user to database.');
         }
       } catch (e) {
-        setState(() {
-          _message = 'Error database insert implementation: $e';
-        });
+        _showErrorMessage('Database error: ${e.toString()}');
       } finally {
         setState(() {
           _isLoading = false;
         });
       }
     } else {
-      setState(() {
-        _message = 'Please fill the required data fields!';
-      });
+      _showErrorMessage('Please fill in all required fields correctly.');
     }
   }
-}
 
-class _CustomTextFormField extends StatelessWidget {
-  final String labelText;
-  final bool obscureText;
-  final FormFieldSetter<String>? onSaved;
-  final FormFieldValidator<String>? validator;
-  final LoginInputType inputType;
-  final Widget? suffixIcon;
+  void _showSuccessMessage(String message) {
+    setState(() {
+      _message = message;
+    });
+  }
 
-  const _CustomTextFormField({
-    super.key,
-    required this.labelText,
-    this.obscureText = false,
-    required this.inputType,
-    this.onSaved,
-    this.validator,
-    this.suffixIcon,
-  });
+  void _showErrorMessage(String message) {
+    setState(() {
+      _message = message;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      style: TextStyle(color: Colors.black),
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: _buildBody(context),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: const Text('Add new user', style: TextStyle(color: Colors.black)),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => context.pop(),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 1,
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(constraints.maxWidth * 0.1),
+          child: _buildForm(context),
+        );
+      },
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildScreenTitle(),
+          SizedBox(height: 24),
+          CustomTextFormField(
+            labelText: 'User Name',
+            inputType: LoginInputType.email,
+            onSaved: (value) => _formData[LoginFormKeys.email.key] = value,
+            validator: _validateUsername,
+          ),
+          SizedBox(height: 16),
+          CustomTextFormField(
+            labelText: 'Password',
+            inputType: LoginInputType.password,
+            obscureText: _obscureText,
+            onSaved: (value) => _formData[LoginFormKeys.password.key] = value,
+            validator: _validatePassword,
+            suffixIcon: IconButton(
+              icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility, color: Colors.black),
+              onPressed: () => setState(() => _obscureText = !_obscureText),
+            ),
+          ),
+          SizedBox(height: 16),
+          _buildRoleDropdown(),
+          SizedBox(height: 24),
+          CustomElevatedButton(
+            onPressed: _isLoading ? null : _addUser,
+            text: 'Add User',
+            loading: _isLoading,
+          ),
+          SizedBox(height: 16),
+          _buildMessageText(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScreenTitle() {
+    return Text(
+      'Please add user to database',
+      textAlign: TextAlign.center,
+      style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+    );
+  }
+
+  Widget _buildRoleDropdown() {
+    if (_isLoading) {
+      return const CircularProgressIndicator();
+    }
+    if (_errorMessage.isNotEmpty) {
+      return Text(
+        _errorMessage,
+        style: const TextStyle(color: Colors.red),
+        textAlign: TextAlign.center,
+      );
+    }
+    return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: TextStyle(color: Colors.black),
+        labelText: 'User Role',
+        labelStyle: const TextStyle(color: Colors.black),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0)),
         filled: true,
         fillColor: Colors.white,
       ),
-      obscureText: obscureText,
-      onSaved: onSaved,
-      validator: validator,
-      keyboardType: inputType == LoginInputType.email
-          ? TextInputType.emailAddress
-          : TextInputType.text,
+      isExpanded: true, // Added isExpanded: true
+      value: _selectedRole,
+      items: _roles?.map((role) => DropdownMenuItem(value: role, child: Text(role, style: const TextStyle(color: Colors.black, overflow: TextOverflow.ellipsis)))).toList() ?? [], // Added overflow: TextOverflow.ellipsis
+      onChanged: (String? newValue) => setState(() {
+        _selectedRole = newValue;
+        _formData['role'] = newValue;
+      }),
+      validator: (value) => value == null || value.isEmpty ? 'Please select a user role' : null,
+      onSaved: (value) => _formData['role'] = value,
     );
   }
-}
 
-class _ElevatedButton extends StatelessWidget {
-  final String text;
-  final VoidCallback? onPressed;
-  final bool loading;
-
-  const _ElevatedButton({
-    super.key,
-    this.onPressed,
-    required this.text,
-    this.loading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.blue),
-        foregroundColor: WidgetStateProperty.all(Colors.white),
-      ),
-      onPressed: loading ? null : onPressed,
-      child: loading
-          ? const CircularProgressIndicator(
-        color: Colors.white,
-      )
-          : Text(text),
+  Widget _buildMessageText() {
+    return Text(
+      _message,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: Colors.red),
     );
+  }
+
+  String? _validateUsername(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Please add user name";
+    }
+    if (!RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$")
+        .hasMatch(value)) {
+      return "Invalid Username format (use email)";
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please provide password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
   }
 }

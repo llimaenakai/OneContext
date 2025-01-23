@@ -17,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   User? get loggedInUser => _loggedInUser;
 
   Future<bool> signup(String username, String email, String password) async {
+    // Signup function remains mostly the same (you can review for audit logging later if needed)
     _setIsLoading(true);
     _setErrorMessage(null);
 
@@ -32,14 +33,14 @@ class AuthProvider extends ChangeNotifier {
 
       await dbHelper.insertRecord('users', {
         'username': username,
-        'email': email,
+        'email': email, // Assuming you want to store email as well during signup
         'password_hash': hashedPassword,
         'role': 'user', // Default role
       });
 
       return true;
     } catch (e) {
-      _logger.e("Signup error:", error:e);
+      _logger.e("Signup error:", error: e);
       _setErrorMessage('An unexpected error occurred during signup.');
     } finally {
       _setIsLoading(false);
@@ -57,9 +58,21 @@ class AuthProvider extends ChangeNotifier {
 
       if (user != null) {
         if (BCrypt.checkpw(password, user.passwordHash)) {
+          // **Login Successful!**
+
+          // 1. Record Login Audit Log
+          await dbHelper.insertRecord('audit_logs', {
+            'user_id': user.id,
+            'event_type': 'login',
+          });
+
+          // 2. Update loggedInUser and notify listeners
           _loggedInUser = user;
           notifyListeners();
-          _authService.saveLoginState(username, password);
+
+          // 3. Save login state (optional - using AuthService)
+          _authService.saveLoginState(username, password); // Consider if you still want to save password
+
           _setIsLoading(false);
           return true;
         } else {
@@ -69,7 +82,7 @@ class AuthProvider extends ChangeNotifier {
         _setErrorMessage('User not found.');
       }
     } catch (e) {
-      _logger.e("Login error:", error:e);
+      _logger.e("Login error:", error: e);
       _setErrorMessage('An unexpected error occurred during login.');
     } finally {
       _setIsLoading(false);
@@ -78,8 +91,21 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // 1. Record Logout Audit Log
+    if (_loggedInUser != null) { // Check if a user is logged in before logging out
+      final dbHelper = DatabaseHelper();
+      await dbHelper.insertRecord('audit_logs', {
+        'user_id': _loggedInUser!.id, // Use loggedInUser's ID
+        'event_type': 'logout',
+        'logout_reason': 'User initiated', // Or get reason dynamically if needed
+      });
+    }
+
+    // 2. Clear loggedInUser and notify listeners
     _loggedInUser = null;
     notifyListeners();
+
+    // 3. Clear login state (using AuthService)
     _authService.clearLoginState();
   }
 
