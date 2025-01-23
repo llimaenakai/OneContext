@@ -1,161 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobilesoftware/widgets/dashboard.dart';  // Import your Dashboard widget
+import 'package:mobilesoftware/widgets/recent_activity.dart'; // Import RecentActivity Widget (Create this new widget as shown below)
+
+
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Dashboard'),
+        title: Text( 
+          'Home',
+
+          style: Theme.of(context).textTheme.titleLarge, // Use a theme text style
+        ),
+        centerTitle: true, // Center the title
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              // Implement Search functionality
-            },
-          ),
+          // ... (search and other actions)
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              child: Text('Mobile Shop'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              title: Text('Dashboard'),
-              onTap: () {
-                // Navigate to Dashboard
-              },
-            ),
-            ListTile(
-              title: Text('Customers'),
-              onTap: () {
-                // Navigate to Customers screen
-              },
-            ),
-            ListTile(
-              title: Text('Orders'),
-              onTap: () {
-                // Navigate to Orders screen
-              },
-            ),
-            ListTile(
-              title: Text('Items'),
-              onTap: () {
-                // Navigate to Items screen
-              },
-            ),
-            ListTile(
-              title: Text('Vendors'),
-              onTap: () {
-                // Navigate to Vendors screen
-              },
-            ),
-            ListTile(
-              title: Text('Payments'),
-              onTap: () {
-                // Navigate to Payments screen
-              },
-            ),
-            ListTile(
-              title: Text('Settings'),
-              onTap: () {
-                // Navigate to Settings screen
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(context),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Summary Cards
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  DashboardCard(title: 'Total Customers', count: 120),
-                  DashboardCard(title: 'Total Orders', count: 300),
-                ],
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  DashboardCard(title: 'Pending Invoices', count: 15),
-                  DashboardCard(title: 'Total Payments', count: 250),
-                ],
-              ),
-              SizedBox(height: 20),
-
-              // Recent Activity Section
-              Text(
-                'Recent Activity',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              ListTile(
-                title: Text('Order #12345 - Customer: John Doe'),
-                subtitle: Text('Status: Pending, Total: \$150'),
-                onTap: () {
-                  // Navigate to specific Order details screen
-                },
-              ),
-              ListTile(
-                title: Text('Invoice #23456 - Customer: Jane Doe'),
-                subtitle: Text('Status: Paid, Total: \$200'),
-                onTap: () {
-                  // Navigate to specific Invoice details screen
-                },
-              ),
+              const Dashboard(),
+              const SizedBox(height: 32),
+              const RecentActivity(),
+              // ... Add other sections here
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class DashboardCard extends StatelessWidget {
-  final String title;
-  final int count;
-
-  const DashboardCard({required this.title, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+  // Separate function for building the Drawer
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader( //Use const where possible.
+            decoration: BoxDecoration(
+              color: Colors.blue, // Or use your theme's primary color
+            ),
+            child: Center(
+              child: Text(
+                'Mobile Shop',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
-            SizedBox(height: 8),
-            Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.blue,
-              ),
-            ),
-          ],
-        ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Dashboard'),
+            onTap: () {
+              // context.goNamed('dashboard');  // Handle navigation as before
+            },
+          ),
+          const Divider(),
+          // ... Other drawer items
+        ],
       ),
     );
   }
+
 }

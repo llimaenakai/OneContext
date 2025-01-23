@@ -5,6 +5,7 @@ import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/error_screen.dart';
 import 'helpers/database_helper.dart';
+import 'package:mobilesoftware/screens/sell_item_screen.dart';
 import 'package:mobilesoftware/screens/users_screen.dart';
 
 
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
         }
         return MaterialPageRoute(builder: (context) => ErrorScreen());
       },
-      home: UsersScreen(),
+      home: SellItemScreen(),
     );
   }
 }

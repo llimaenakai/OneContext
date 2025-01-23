@@ -2,7 +2,6 @@
 class Assets {
   Assets._();
 
-  static const String dataDatabaseHelper = 'lib/data/database_helper.dart';
   static const String generatedAssets = 'lib/generated/assets.dart';
   static const String helpersDatabaseHelper = 'lib/helpers/database_helper.dart';
   static const String imagesLogo = 'lib/assets/images/logo.png';
@@ -15,10 +14,13 @@ class Assets {
   static const String screensErrorScreen = 'lib/screens/error_screen.dart';
   static const String screensHomeScreen = 'lib/screens/home_screen.dart';
   static const String screensLoginScreen = 'lib/screens/login_screen.dart';
+  static const String screensSellItemScreen = 'lib/screens/sell_item_screen.dart';
   static const String screensSignupScreen = 'lib/screens/signup_screen.dart';
   static const String screensUsersScreen = 'lib/screens/users_screen.dart';
   static const String servicesAuthService = 'lib/services/auth_service.dart';
   static const String stylesStyles = 'lib/styles/styles.dart';
   static const String utilsConstants = 'lib/core/utils/constants.dart';
+  static const String widgetsDashboard = 'lib/widgets/dashboard.dart';
+  static const String widgetsRecentActivity = 'lib/widgets/recent_activity.dart';
 
 }
