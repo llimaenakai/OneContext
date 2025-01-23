@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobilesoftware/screens/add_user_screen.dart';
+import 'package:mobilesoftware/screens/users_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/error_screen.dart';
 import 'helpers/database_helper.dart';
-//import 'package:mobilesoftware/screens/users_screen.dart';
+import 'package:mobilesoftware/screens/users_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobilesoftware/core/providers/auth_provider.dart';
 
@@ -104,7 +105,7 @@ class MyApp extends StatelessWidget {
           }
           return MaterialPageRoute(builder: (context) => ErrorScreen());
         },
-        home: const AddUserScreen(),
+        home: const UsersScreen(),
       ),
     );
   }
