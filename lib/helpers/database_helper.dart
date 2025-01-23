@@ -279,7 +279,7 @@ class DatabaseHelper {
       final db = await database;
       final users =  await db.query('users');
       if(users.isEmpty){
-        final hashedPassword = await _hashPassword("admin123");
+        final hashedPassword = await hashPassword("admin123"); // Changed to public function
         await db.insert('users',{
           'username':'admin',
           'password_hash': hashedPassword,
@@ -289,21 +289,25 @@ class DatabaseHelper {
     } catch(e){
       throw  DatabaseException("Failed To add Admin User or check User Database");
     }
-  }
+  }// **Made Public - Removed Underscore `_`**
 
-
-  Future<String> _hashPassword(String password) async {
+  Future<String> hashPassword(String password) async {
     final salt = BCrypt.gensalt();
     return BCrypt.hashpw(password,salt);
   }
-  Future<List<User>> getUsersByName(String username) async {
+  Future<User?> getUserByName(String username) async { // **1. Changed return type to User?**
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'users',
       where: 'username = ?',
       whereArgs: [username],
     );
-    return maps.map((map) => User.fromMap(map)).toList();
+
+    if (maps.isEmpty) {
+      return null; // **2a. Return null if no user found**
+    }
+
+    return User.fromMap(maps.first); // **2b. Return the first user as User object**
   }
   Future<int> insertRecord(String tableName, Map<String, dynamic> values) async {
     final db = await database;

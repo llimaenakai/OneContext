@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobilesoftware/core/utils/constants.dart';
 import 'package:mobilesoftware/helpers/database_helper.dart';
-import 'package:mobilesoftware/styles/styles.dart';
+//import 'package:mobilesoftware/styles/styles.dart'; // Ensure this import is still here
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key});
@@ -24,7 +24,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       appBar: AppBar(
         title: const Text(
           'Add new user',
-          style: TextStyle(color: Colors.black), // Change text color to black
+          style: TextStyle(color: Colors.black),
         ),
         leading: IconButton(
           onPressed: () {
@@ -32,7 +32,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
           },
           icon: const Icon(
             Icons.arrow_back,
-            color: Colors.black, // Change icon color to black
+            color: Colors.black,
           ),
         ),
       ),
@@ -48,7 +48,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   children: [
                     Text(
                       'Please add user to database',
-                      style: TextStyle(color: Colors.black, fontSize: 18), // Change text color
+                      style: TextStyle(color: Colors.black, fontSize: 18),
                     ),
                     SizedBox(height: constraints.maxHeight * 0.03),
                     _CustomTextFormField(
@@ -131,9 +131,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
       try {
         final dbHelper = DatabaseHelper();
+        // **Security Improvement: Hash the password before inserting**
+        final hashedPassword = await dbHelper.hashPassword(_formData[LoginFormKeys.password.key]);
+
         final userId = await dbHelper.insertRecord('users', {
           'username': _formData[LoginFormKeys.email.key],
-          'password_hash': 'mocked hash',
+          'password_hash': hashedPassword, // Use the hashed password
           'role': 'administrator',
         });
         if (userId > 0) {
@@ -189,10 +192,10 @@ class _CustomTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      style: TextStyle(color: Colors.black), // Text color black
+      style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: TextStyle(color: Colors.black), // Label text color black
+        labelStyle: TextStyle(color: Colors.black),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0)),
         filled: true,
         fillColor: Colors.white,
@@ -223,8 +226,8 @@ class _ElevatedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.blue), // Button background color
-        foregroundColor: WidgetStateProperty.all(Colors.white), // Text color white
+        backgroundColor: WidgetStateProperty.all(Colors.blue),
+        foregroundColor: WidgetStateProperty.all(Colors.white),
       ),
       onPressed: loading ? null : onPressed,
       child: loading

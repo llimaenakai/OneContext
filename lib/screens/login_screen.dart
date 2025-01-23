@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:mobilesoftware/styles/styles.dart';
-import 'package:mobilesoftware/screens/home_screen.dart';
+import 'package:mobilesoftware/screens/home_screen.dart'; // Keep for now, navigation will be handled differently later
+import 'package:provider/provider.dart'; // Import Provider
+import 'package:mobilesoftware/core/providers/auth_provider.dart'; // Import AuthProvider
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,26 +40,62 @@ class LoginScreen extends StatelessWidget {
                     height: MediaQuery.of(context).size.height * 0.2,
                   ),
                   const SizedBox(height: 20),
-                  Text('Login Name', style: Styles.titleStyle),
+                  Text(
+                    'Login Name',
+                    style: Theme.of(context).textTheme.titleLarge, // Use theme's titleLarge
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(labelText: 'User Name', obscureText: false),
+                  _buildTextField(labelText: 'User Name', obscureText: false, context: context), // Pass context
                   const SizedBox(height: 20),
-                  _buildTextField(labelText: 'Password', obscureText: true),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Styles.primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 90, vertical: 10),
-                      textStyle: Styles.buttonTextStyle,
-                    ),
-                    onPressed: () {
-                      // Navigate to HomeScreen and clear LoginScreen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                  _buildTextField(labelText: 'Password', obscureText: true, context: context), // Pass context
+                  const SizedBox(height: 10),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return Column(
+                        children: [
+                          if (authProvider.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Text(
+                                authProvider.errorMessage!,
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith( // Use headline6 from theme for error
+                                  color: Theme.of(context).colorScheme.error, // Ensure error color from theme
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ElevatedButton(
+                            style: Theme.of(context).elevatedButtonTheme.style?.copyWith( // Use button theme
+                              padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 90, vertical: 10)),
+                            ),
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : () async {
+                              final username = _usernameController.text;
+                              final password = _passwordController.text;
+                              final loginSuccess = await authProvider.login(username, password);
+                              if (loginSuccess) {
+                                print("Login Successful!");
+                              } else {
+                                print("Login Failed");
+                              }
+                            },
+                            child: authProvider.isLoading
+                                ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                                : Text(
+                              'Login',
+                              style: Theme.of(context).textTheme.labelSmall, // Use button text style from theme
+                            ),
+                          ),
+                        ],
                       );
                     },
-                    child: const Text('Login'),
                   ),
                   const SizedBox(height: 10),
                   TextButton(
@@ -64,15 +116,17 @@ class LoginScreen extends StatelessWidget {
   TextFormField _buildTextField({
     required String labelText,
     required bool obscureText,
+    required BuildContext context,
   }) {
     return TextFormField(
-      style: Styles.inputTextStyle,
+      controller: _usernameController, // Note: Still using _usernameController (should be based on labelText or more generic if reused)
+      style: Theme.of(context).textTheme.bodyMedium, // Use theme's bodyText1
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: Styles.inputLabelStyle,
+        labelStyle: Theme.of(context).textTheme.labelMedium, // Use theme's caption
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0)),
         filled: true,
-        fillColor: Styles.secondaryColor,
+        fillColor: Theme.of(context).colorScheme.secondary, // Use theme's secondary color
       ),
       obscureText: obscureText,
     );

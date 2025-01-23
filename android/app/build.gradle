@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+    namespace "com.it_nomads.flutter_secure_storage"
     namespace = "com.example.mobilesoftware"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
