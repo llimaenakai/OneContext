@@ -3,6 +3,7 @@
 
  ## Quick Install
  Install: ```npm i -g onecontext-ai```
+ 
  Then run: ```onecontext```
 
 ## Key Features
