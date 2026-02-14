@@ -71,5 +71,6 @@ If the commands aren't found after installation:
 Feel free to raise an issue ticket for any problems you encounter, or for any features or improvements you’d like to see in the future 🙂
 
 ## Update
+14-02-2026: v0.8.3 Release - Import History Session
 07-02-2026: First Release
  
