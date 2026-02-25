@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:bcrypt/bcrypt.dart';
-import 'package:mobilesoftware/helpers/database_helper.dart';
+import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:mobilesoftware/helpers/database_helper.dart';
 import 'package:mobilesoftware/models/user.dart';
 import 'package:mobilesoftware/services/auth_service.dart';
 
@@ -33,7 +33,8 @@ class AuthProvider extends ChangeNotifier {
 
       await dbHelper.insertRecord('users', {
         'username': username,
-        'email': email, // Assuming you want to store email as well during signup
+        'email':
+            email, // Assuming you want to store email as well during signup
         'password_hash': hashedPassword,
         'role': 'user', // Default role
       });
@@ -57,7 +58,9 @@ class AuthProvider extends ChangeNotifier {
       final User? user = await dbHelper.getUserByName(username);
 
       if (user != null) {
+        // This line will check if the user exist in database or not
         if (BCrypt.checkpw(password, user.passwordHash)) {
+          // the above line will check either password which is stored in hash form in our database are the same as we received just from the user right now if its true it enters into below body
           // **Login Successful!**
 
           // 1. Record Login Audit Log
@@ -71,7 +74,8 @@ class AuthProvider extends ChangeNotifier {
           notifyListeners();
 
           // 3. Save login state (optional - using AuthService)
-          _authService.saveLoginState(username, password); // Consider if you still want to save password
+          _authService.saveLoginState(username,
+              password); // Consider if you still want to save password
 
           _setIsLoading(false);
           return true;
@@ -92,12 +96,14 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     // 1. Record Logout Audit Log
-    if (_loggedInUser != null) { // Check if a user is logged in before logging out
+    if (_loggedInUser != null) {
+      // Check if a user is logged in before logging out
       final dbHelper = DatabaseHelper();
       await dbHelper.insertRecord('audit_logs', {
         'user_id': _loggedInUser!.id, // Use loggedInUser's ID
         'event_type': 'logout',
-        'logout_reason': 'User initiated', // Or get reason dynamically if needed
+        'logout_reason':
+            'User initiated', // Or get reason dynamically if needed
       });
     }
 

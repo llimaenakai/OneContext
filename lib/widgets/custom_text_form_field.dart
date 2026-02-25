@@ -11,7 +11,7 @@ class CustomTextFormField extends StatelessWidget {
   final TextEditingController? controller; // Add controller parameter
 
   const CustomTextFormField({
-    Key? key,
+    super.key,
     required this.labelText,
     this.obscureText = false,
     required this.inputType,
@@ -19,7 +19,7 @@ class CustomTextFormField extends StatelessWidget {
     this.validator,
     this.suffixIcon,
     this.controller, // Initialize controller
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

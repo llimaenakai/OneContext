@@ -1,7 +1,7 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:mobilesoftware/models/user.dart';
 import 'package:bcrypt/bcrypt.dart';
+import 'package:mobilesoftware/models/user.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DatabaseException implements Exception {
   final String message;
@@ -260,6 +260,7 @@ class DatabaseHelper {
         throw ArgumentError('Unknown table name: $tableName');
     }
   }
+
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       try {
@@ -269,6 +270,7 @@ class DatabaseHelper {
       }
     }
   }
+
   Future<void> _onDowngrade(Database db, int oldVersion, int newVersion) async {
     throw DatabaseException('Database downgrade is not supported.');
   }
@@ -276,28 +278,31 @@ class DatabaseHelper {
   Future<void> initializeDatabase() async {
     try {
       final db = await database;
-      final users =  await db.query('users');
-      if(users.isEmpty){
-        final hashedPassword = await hashPassword("admin123"); // Changed to public function
-        await db.insert('users',{
-          'username':'admin',
+      final users = await db.query('users');
+      if (users.isEmpty) {
+        final hashedPassword =
+            await hashPassword("admin123"); // Changed to public function
+        await db.insert('users', {
+          'username': 'admin',
           'password_hash': hashedPassword,
           'role': 'administrator'
         });
       }
-    } catch(e){
-      throw  DatabaseException("Failed To add Admin User or check User Database");
+    } catch (e) {
+      throw DatabaseException(
+          "Failed To add Admin User or check User Database");
     }
   }
 
   Future<String> hashPassword(String password) async {
     final salt = BCrypt.gensalt();
-    return BCrypt.hashpw(password,salt);
+    return BCrypt.hashpw(password, salt);
   }
+
   Future<User?> getUserByName(String username) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'users',
+      'users', // users is table in our database
       where: 'username = ?',
       whereArgs: [username],
     );
@@ -308,73 +313,93 @@ class DatabaseHelper {
 
     return User.fromMap(maps.first);
   }
-  Future<int> insertRecord(String tableName, Map<String, dynamic> values) async {
+
+  Future<int> insertRecord(
+      String tableName, Map<String, dynamic> values) async {
     final db = await database;
-    try{
-      return await db.insert(tableName, {
-        ...values, // Insert original values
-        'created_at': DateTime.now().toIso8601String(), // Insert timestamp
-      });
-    } catch (e)
-    {
+    try {
+      Map<String, dynamic> insertValues = {
+        ...values
+      }; // Create a copy of values
+
+      // Check if the table has a 'created_at' column before adding it
+      List<Map<String, dynamic>> columns =
+          await db.rawQuery('PRAGMA table_info($tableName)');
+      bool hasCreatedAtColumn =
+          columns.any((columnInfo) => columnInfo['name'] == 'created_at');
+
+      if (hasCreatedAtColumn) {
+        insertValues['created_at'] = DateTime.now()
+            .toIso8601String(); // Add created_at only if column exists
+      }
+
+      return await db.insert(
+          tableName, insertValues); // Use the modified insertValues map
+    } catch (e) {
       throw DatabaseException('Error inserting record: $e');
     }
   }
-  Future<List<Map<String,dynamic>>> getAllRecords(String tableName) async {
-    final db = await database;
-    try{
-      return await db.query(tableName);
-    }catch(e)
-    {
-      throw  DatabaseException("failed to query from $tableName exception error : $e ");
-    }
-  }
-  Future<List<Map<String,dynamic>>> getRecordById(String tableName, int id) async {
+
+  Future<List<Map<String, dynamic>>> getAllRecords(String tableName) async {
     final db = await database;
     try {
-      return  await db.query(
+      return await db.query(tableName);
+    } catch (e) {
+      throw DatabaseException(
+          "failed to query from $tableName exception error : $e ");
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getRecordById(
+      String tableName, int id) async {
+    final db = await database;
+    try {
+      return await db.query(
         tableName,
         where: 'id = ?',
         whereArgs: [id],
       );
-
-    } catch(e)
-    {
-
-      throw   DatabaseException("failed to get record with $id with exception  $e");
-
+    } catch (e) {
+      throw DatabaseException(
+          "failed to get record with $id with exception  $e");
     }
   }
-  Future<int> updateRecord(String tableName, Map<String, dynamic> values, int id) async {
+
+  Future<int> updateRecord(
+      String tableName, Map<String, dynamic> values, int id) async {
     final db = await database;
     try {
-
-      return await db.update(tableName,values ,  where: 'id = ?', whereArgs: [id],);
-    } catch(e) {
-      throw  DatabaseException("fail to update with  id $id from table  $tableName, error:  $e" );
+      return await db.update(
+        tableName,
+        values,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw DatabaseException(
+          "fail to update with  id $id from table  $tableName, error:  $e");
     }
   }
 
   Future<int> deleteRecord(String tableName, int id) async {
     final db = await database;
-    try{
-
+    try {
       return await db.delete(tableName, where: 'id = ?', whereArgs: [id]);
-    } catch(e) {
-
+    } catch (e) {
       throw DatabaseException('Error deleting record with id: $id, $e');
     }
-
   }
+
   Future<List<String>> getDistinctUserRoles() async {
     final db = await database;
     try {
       final List<Map<String, dynamic>> roleMaps = await db.rawQuery(
           'SELECT DISTINCT role FROM users'); // SQL to get distinct roles
-      return roleMaps.map((map) => map['role'] as String).toList(); // Convert maps to list of strings
+      return roleMaps
+          .map((map) => map['role'] as String)
+          .toList(); // Convert maps to list of strings
     } catch (e) {
       throw DatabaseException('Failed to fetch distinct user roles: $e');
     }
   }
-
 }

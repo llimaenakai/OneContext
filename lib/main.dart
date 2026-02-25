@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:mobilesoftware/core/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+
 import 'helpers/database_helper.dart';
 import 'router.dart';
 
@@ -20,13 +20,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => AuthProvider(),
-      child: MaterialApp.router( // Use MaterialApp.router
+      child: MaterialApp.router(
+        // Use MaterialApp.router
         routerConfig: router, // Provide the router configuration
-        title: 'My App',
+        title: 'Usman',
         theme: ThemeData(
           primaryColor: const Color(0xFF0066CC),
           scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0xFFFFFFFF)),
+          colorScheme: ColorScheme.fromSwatch()
+              .copyWith(secondary: const Color(0xFFFFFFFF)),
           textTheme: const TextTheme(
             titleLarge: TextStyle(
               fontSize: 24,
@@ -47,16 +49,19 @@ class MyApp extends StatelessWidget {
               fontSize: 18,
               color: Color(0xFFFFFFFF),
             ),
-            bodySmall: TextStyle( // Use bodySmall for one purpose
+            bodySmall: TextStyle(
+              // Use bodySmall for one purpose
               fontSize: 16,
               color: Color(0xFFFFA500),
             ),
-            labelLarge: TextStyle( // Use labelLarge for buttons
+            labelLarge: TextStyle(
+              // Use labelLarge for buttons
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
-            labelSmall: TextStyle( // Use labelSmall for error text
+            labelSmall: TextStyle(
+              // Use labelSmall for error text
               fontSize: 14,
               color: Color(0xFFB00020),
               fontWeight: FontWeight.w400,
@@ -77,7 +82,7 @@ class MyApp extends StatelessWidget {
               ),
             ).copyWith(
               backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<WidgetState> states) {
+                (Set<WidgetState> states) {
                   if (states.contains(WidgetState.disabled)) {
                     return const Color(0xFFBDBDBD);
                   }

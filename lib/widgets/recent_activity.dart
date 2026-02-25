@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RecentActivity extends StatelessWidget {
-  const RecentActivity({Key? key}) : super(key: key);
+  const RecentActivity({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class RecentActivity extends StatelessWidget {
 class RecentActivityItemTile extends StatelessWidget {
   final RecentActivityItem item;
 
-  const RecentActivityItemTile({Key? key, required this.item}) : super(key: key);
+  const RecentActivityItemTile({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
